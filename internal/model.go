@@ -1,6 +1,9 @@
 package internal
 
-import "github.com/btcsuite/btcd/wire"
+import (
+	"github.com/btcsuite/btcd/wire"
+	"log/slog"
+)
 
 type ArmoredOutpoint struct {
 	wire.OutPoint
@@ -21,5 +24,6 @@ func (ao *ArmoredOutpoint) FindNextPreSignedTx(minFee int64) (PreSignedTx, bool)
 			return preSignedTx, true
 		}
 	}
+	slog.Warn("No spendable pre-signed transaction found", "outpoint", ao)
 	return PreSignedTx{}, false
 }

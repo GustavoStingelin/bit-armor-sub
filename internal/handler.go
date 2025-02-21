@@ -4,27 +4,31 @@ import (
 	"bytes"
 	"encoding/binary"
 	"encoding/hex"
+	"fmt"
 	"github.com/btcsuite/btcd/wire"
 	"log/slog"
 )
 
 func handleRawTx(topic string, txBytes []byte, seqBytes []byte) {
-	slog.Debug("Received topic: %s\n", topic)
-	slog.Debug("Raw Transaction: %s\n", hex.EncodeToString(txBytes))
+	slog.Debug("Received topic", "topic", topic)
+	slog.Debug("Raw Transaction", "rawTx", hex.EncodeToString(txBytes))
 
 	if len(seqBytes) == 4 {
 		sequence := binary.LittleEndian.Uint32(seqBytes)
-		slog.Debug("Sequence Number: %d\n", sequence)
+		slog.Debug("Sequence Number", "seq", sequence)
 	}
 
 	tx := &wire.MsgTx{}
 	err := tx.Deserialize(bytes.NewReader(txBytes))
 	if err != nil {
-		slog.Error("Failed to parse transaction: %v\n", err)
+		slog.Error("Failed to parse transaction", "err", err)
 		return
 	}
-	txHash := tx.TxHash()
-	slog.Debug("Parsed Transaction: %x %+v\n", txHash, tx)
+	txId := tx.TxID()
+	slog.Info("Parsed Transaction",
+		"txId", txId,
+		"tx", fmt.Sprintf("%+v", tx),
+	)
 
 TxInLoop:
 	for _, txIn := range tx.TxIn {
@@ -33,31 +37,31 @@ TxInLoop:
 		if !ok {
 			continue
 		}
-		slog.Info("Found armored outpoint: %+v\n", armoredOutPoint)
+		slog.Info("Found armored outpoint", "outpoint", armoredOutPoint)
 
 		for _, preSignedTx := range armoredOutPoint.SpendablePreSigned {
 			buff := bytes.NewBuffer([]byte{})
 			err := tx.Serialize(buff)
 			if err != nil {
-				slog.Error("Failed to serialize transaction: %v\n", err)
+				slog.Error("Failed to serialize transaction", "err", err)
 				continue
 			}
 
 			if bytes.Equal(preSignedTx.raw, buff.Bytes()) {
-				slog.Info("Found matching pre-signed transaction: %+v\n", preSignedTx)
+				slog.Info("Found matching pre-signed transaction", "tx", preSignedTx)
 				break TxInLoop
 			}
 		}
-		slog.Warn("Unknown transaction spending armored outpoint, armor activated: %+v\n", armoredOutPoint)
+		slog.Warn("Unknown transaction spending armored outpoint, armor activated", "outpoint", armoredOutPoint)
 		actualFee := armoredOutPoint.value
 		for _, txOut := range tx.TxOut {
 			actualFee -= txOut.Value
 		}
-		slog.Warn("Actual fee: %d\n", actualFee)
+		slog.Warn("Actual fee", "fee", actualFee)
 
 		preSignedTx, ok := armoredOutPoint.FindNextPreSignedTx(actualFee)
 		if !ok {
-			slog.Error("No pre-signed transaction found for fee: %d\n", actualFee)
+			slog.Error("No pre-signed transaction found for fee", "fee", actualFee)
 			continue
 		}
 
@@ -65,6 +69,6 @@ TxInLoop:
 		if err != nil {
 			return
 		}
-		slog.Warn("Sent pre-signed transaction: %s\n", res)
+		slog.Warn("Sent pre-signed transaction:", "response", res)
 	}
 }

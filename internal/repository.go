@@ -21,14 +21,14 @@ func InitDBPool() {
 
 	config, err := pgxpool.ParseConfig(databaseUrl)
 	if err != nil {
-		slog.Error("Failed to parse database URL: %v", err)
+		slog.Error("Failed to parse database URL", "err", err)
 	}
 
 	config.ConnConfig.DefaultQueryExecMode = pgx.QueryExecModeSimpleProtocol
 
 	DBPool, err = pgxpool.NewWithConfig(context.Background(), config)
 	if err != nil {
-		slog.Error("Failed to create connection pool: %v", err)
+		slog.Error("Failed to create connection pool", "err", err)
 	}
 
 	// test connection
