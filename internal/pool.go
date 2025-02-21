@@ -7,7 +7,7 @@ import (
 
 type ArmoredPool struct {
 	outpoints map[chainhash.Hash]map[uint32]ArmoredOutpoint
-	mu        *sync.RWMutex
+	mu        sync.RWMutex
 }
 
 var ap = &ArmoredPool{
