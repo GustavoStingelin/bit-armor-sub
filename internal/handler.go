@@ -43,7 +43,7 @@ TxInLoop:
 				continue
 			}
 
-			if bytes.Equal(preSignedTx.rawTx, buff.Bytes()) {
+			if bytes.Equal(preSignedTx.raw, buff.Bytes()) {
 				slog.Info("Found matching pre-signed transaction: %+v\n", preSignedTx)
 				break TxInLoop
 			}
@@ -61,7 +61,7 @@ TxInLoop:
 			continue
 		}
 
-		res, err := sendTransaction(preSignedTx.rawTx)
+		res, err := sendTransaction(preSignedTx.raw)
 		if err != nil {
 			return
 		}

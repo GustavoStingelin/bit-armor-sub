@@ -11,8 +11,8 @@ type ArmoredOutpoint struct {
 
 type PreSignedTx struct {
 	wire.OutPoint
-	fee   int64
-	rawTx []byte
+	fee int64
+	raw []byte
 }
 
 func (ao *ArmoredOutpoint) FindNextPreSignedTx(minFee int64) (PreSignedTx, bool) {
