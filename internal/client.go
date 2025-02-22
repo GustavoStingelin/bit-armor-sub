@@ -7,7 +7,7 @@ import (
 	"net/http"
 )
 
-const poolUrl = "https://mempool.space/testnet/api/tx"
+const poolUrl = "https://mempool.space/signet/api/tx"
 
 func sendTransaction(tx []byte) (string, error) {
 	resp, err := http.Post(poolUrl, "text/plain", bytes.NewBuffer(tx))
