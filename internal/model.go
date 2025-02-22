@@ -1,21 +1,23 @@
 package internal
 
 import (
-	"github.com/btcsuite/btcd/wire"
+	"github.com/btcsuite/btcd/chaincfg/chainhash"
 	"log/slog"
 )
 
 type ArmoredOutpoint struct {
-	wire.OutPoint
+	Hash               chainhash.Hash
+	Index              uint32
 	value              int64
 	DestinationAddress string
 	SpendablePreSigned []PreSignedTx
 }
 
 type PreSignedTx struct {
-	wire.OutPoint
-	fee int64
-	raw []byte
+	Hash  chainhash.Hash
+	Index uint32
+	fee   int64
+	raw   []byte
 }
 
 func (ao *ArmoredOutpoint) FindNextPreSignedTx(minFee int64) (PreSignedTx, bool) {
